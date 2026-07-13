@@ -1650,43 +1650,43 @@ function buildPresKPIs(){
   }
   
   document.getElementById('kpi-pres-row').innerHTML = `
-    <!-- Columna izquierda: Tres de Febrero + Lanús (apilados) -->
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="kcard" style="background:#E1F5EE;border:.5px solid #5DCAA5;min-height:auto;flex:1;display:flex;flex-direction:column;justify-content:center">
-        <div class="kl" style="color:#0F6E56;font-weight:700">🟢 Menor presión fiscal</div>
-        <div style="font-size:20px;font-weight:800;color:#0F6E56;line-height:1.15;margin-top:6px">${muniMin ? muniMin.nombre : 's/d'}${muniMin && muniMin.nombre==='Tres de Febrero'?'<span style="background:var(--gold);color:var(--navy);font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle">3F</span>':''}</div>
-        <div style="font-size:28px;font-weight:800;color:#0F6E56;line-height:1.1;margin-top:8px">${muniMin ? trunc2(muniMin.indice_fiscal.total) + '%' : 's/d'}</div>
-        <div style="font-size:10px;color:var(--tx-sec);margin-top:4px">Promedio de los 5 rubros</div>
+    <!-- Columna izquierda: Menor presión fiscal + Top 5 Menor (verdes) -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="kcard" style="background:#E1F5EE;border:.5px solid #5DCAA5;min-height:auto;flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px 12px">
+        <div class="kl" style="color:#0F6E56;font-weight:700;font-size:11px">🟢 Menor presión fiscal</div>
+        <div style="font-size:15px;font-weight:800;color:#0F6E56;line-height:1.15;margin-top:4px">${muniMin ? muniMin.nombre : 's/d'}${muniMin && muniMin.nombre==='Tres de Febrero'?'<span style="background:var(--gold);color:var(--navy);font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle">3F</span>':''}</div>
+        <div style="font-size:22px;font-weight:800;color:#0F6E56;line-height:1.1;margin-top:4px">${muniMin ? trunc2(muniMin.indice_fiscal.total) + '%' : 's/d'}</div>
+        <div style="font-size:10px;color:var(--tx-sec);margin-top:2px">Promedio de los 5 rubros</div>
       </div>
-      <div class="kcard" style="background:#FCEBEB;border:.5px solid #F09595;min-height:auto;flex:1;display:flex;flex-direction:column;justify-content:center">
-        <div class="kl" style="color:#A32D2D;font-weight:700">🔴 Mayor presión fiscal</div>
-        <div style="font-size:20px;font-weight:800;color:#A32D2D;line-height:1.15;margin-top:6px">${muniMax ? muniMax.nombre : 's/d'}</div>
-        <div style="font-size:28px;font-weight:800;color:#A32D2D;line-height:1.1;margin-top:8px">${muniMax ? trunc2(muniMax.indice_fiscal.total) + '%' : 's/d'}</div>
-        <div style="font-size:10px;color:var(--tx-sec);margin-top:4px">Promedio de los 5 rubros</div>
-      </div>
-    </div>
-    <!-- Columna derecha: Top 5 mayor + Top 5 menor (apilados) -->
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="kcard" style="background:#FCEBEB;border:.5px solid #F09595;min-height:auto;flex:1;display:flex;flex-direction:column">
-        <div class="kl" style="color:#A32D2D;font-weight:700;display:flex;justify-content:space-between;align-items:center">
-          <span>🔝 Top 5 — Mayor presión fiscal</span>
-          <span style="font-size:9px;color:var(--tx-sec);font-weight:500;text-transform:none;letter-spacing:0">52 munis con datos</span>
-        </div>
-        <div style="margin-top:6px;flex:1">${renderTopList(top5Mayor, '#A32D2D', 'rgba(163,45,45,.18)', 'worst')}</div>
-        <div style="margin-top:8px;padding-top:8px;border-top:.5px dashed rgba(163,45,45,.3);display:flex;justify-content:space-between;font-size:10.5px">
-          <span style="color:#A32D2D"><b>Promedio Top 5:</b> ${trunc2(sMayor.prom)}%</span>
-          <span style="color:#A32D2D"><b>Brecha 1°↔5°:</b> ${trunc2(sMayor.brecha)}%</span>
-        </div>
-      </div>
-      <div class="kcard" style="background:#E1F5EE;border:.5px solid #5DCAA5;min-height:auto;flex:1;display:flex;flex-direction:column">
-        <div class="kl" style="color:#0F6E56;font-weight:700;display:flex;justify-content:space-between;align-items:center">
+      <div class="kcard" style="background:#E1F5EE;border:.5px solid #5DCAA5;min-height:auto;flex:1;display:flex;flex-direction:column;padding:10px 12px">
+        <div class="kl" style="color:#0F6E56;font-weight:700;font-size:11px;display:flex;justify-content:space-between;align-items:center">
           <span>⬇️ Top 5 — Menor presión fiscal</span>
           <span style="font-size:9px;color:var(--tx-sec);font-weight:500;text-transform:none;letter-spacing:0">52 munis con datos</span>
         </div>
-        <div style="margin-top:6px;flex:1">${renderTopList(top5Menor, '#0F6E56', 'rgba(15,110,86,.18)', 'best')}</div>
-        <div style="margin-top:8px;padding-top:8px;border-top:.5px dashed rgba(15,110,86,.3);display:flex;justify-content:space-between;font-size:10.5px">
+        <div style="margin-top:4px;flex:1">${renderTopList(top5Menor, '#0F6E56', 'rgba(15,110,86,.18)', 'best')}</div>
+        <div style="margin-top:6px;padding-top:6px;border-top:.5px dashed rgba(15,110,86,.3);display:flex;justify-content:space-between;font-size:10px">
           <span style="color:#0F6E56"><b>Promedio Top 5:</b> ${trunc2(sMenor.prom)}%</span>
           <span style="color:#0F6E56"><b>Brecha 1°↔5°:</b> ${trunc2(sMenor.brecha)}%</span>
+        </div>
+      </div>
+    </div>
+    <!-- Columna derecha: Mayor presión fiscal + Top 5 Mayor (rojos) -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="kcard" style="background:#FCEBEB;border:.5px solid #F09595;min-height:auto;flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px 12px">
+        <div class="kl" style="color:#A32D2D;font-weight:700;font-size:11px">🔴 Mayor presión fiscal</div>
+        <div style="font-size:15px;font-weight:800;color:#A32D2D;line-height:1.15;margin-top:4px">${muniMax ? muniMax.nombre : 's/d'}</div>
+        <div style="font-size:22px;font-weight:800;color:#A32D2D;line-height:1.1;margin-top:4px">${muniMax ? trunc2(muniMax.indice_fiscal.total) + '%' : 's/d'}</div>
+        <div style="font-size:10px;color:var(--tx-sec);margin-top:2px">Promedio de los 5 rubros</div>
+      </div>
+      <div class="kcard" style="background:#FCEBEB;border:.5px solid #F09595;min-height:auto;flex:1;display:flex;flex-direction:column;padding:10px 12px">
+        <div class="kl" style="color:#A32D2D;font-weight:700;font-size:11px;display:flex;justify-content:space-between;align-items:center">
+          <span>🔝 Top 5 — Mayor presión fiscal</span>
+          <span style="font-size:9px;color:var(--tx-sec);font-weight:500;text-transform:none;letter-spacing:0">52 munis con datos</span>
+        </div>
+        <div style="margin-top:4px;flex:1">${renderTopList(top5Mayor, '#A32D2D', 'rgba(163,45,45,.18)', 'worst')}</div>
+        <div style="margin-top:6px;padding-top:6px;border-top:.5px dashed rgba(163,45,45,.3);display:flex;justify-content:space-between;font-size:10px">
+          <span style="color:#A32D2D"><b>Promedio Top 5:</b> ${trunc2(sMayor.prom)}%</span>
+          <span style="color:#A32D2D"><b>Brecha 1°↔5°:</b> ${trunc2(sMayor.brecha)}%</span>
         </div>
       </div>
     </div>
