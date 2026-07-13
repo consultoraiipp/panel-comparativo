@@ -238,6 +238,7 @@ canvas{max-width:100%;height:auto}
   <button class="tab" id="tb-fis" onclick="show('fis')">Indicadores fiscales</button>
   <button class="tab" id="tb-p135" onclick="show('p135')">PBG 135 municipios</button>
   <button class="tab" id="tb-pmun" onclick="show('pmun')">Panel por municipio</button>
+  <button class="tab" id="tb-mapa" onclick="show('mapa')">Mapa</button>
   <button class="tab" id="tb-con" onclick="show('con')">Consideraciones generales</button>
 </div>
 
@@ -771,6 +772,17 @@ canvas{max-width:100%;height:auto}
 
   <div id="pmun-fichas-wrap">
     <div id="pmun-fichas" style="display:flex;gap:10px;align-items:stretch;flex-wrap:wrap"></div>
+  </div>
+</div>
+
+<!-- MAPA INTERACTIVO (iframe lazy-load: el src se asigna al abrir la pestaña) -->
+<div id="tab-mapa" class="hidden">
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="ct" style="padding:14px 18px 0">Mapa interactivo <span class="cs">Presión fiscal por municipio · clic en un partido para ver su ficha</span></div>
+    <iframe id="mapa-frame" title="Mapa interactivo de presión fiscal"
+      data-src="mapa/index.html?embed=1"
+      style="width:100%;height:78vh;min-height:560px;border:0;display:block;margin-top:12px"
+      loading="lazy" referrerpolicy="no-referrer"></iframe>
   </div>
 </div>
 
@@ -3300,7 +3312,7 @@ function renderPmunFicha(m, maxs){
 }
 
 function show(t){
-  ['res','inf','ali','pres','pbg','fis','p135','pmun','con'].forEach(x => {
+  ['res','inf','ali','pres','pbg','fis','p135','pmun','mapa','con'].forEach(x => {
     document.getElementById('tab-'+x).classList.add('hidden');
     document.getElementById('tb-'+x).classList.remove('active');
   });
@@ -3314,6 +3326,7 @@ function show(t){
   if(t==='fis'){ setTimeout(() => { drawFisChart(); buildFisRanks(); renderFisTable(); }, 30); }
   if(t==='p135'){ setTimeout(buildP135, 30); }
   if(t==='pmun'){ buildPmun(); }
+  if(t==='mapa'){ var f=document.getElementById('mapa-frame'); if(f && !f.src){ f.src=f.getAttribute('data-src'); } }
   if(t==='con'){ buildCon(); }
 }
 
