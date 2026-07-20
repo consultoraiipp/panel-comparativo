@@ -125,6 +125,9 @@ body{padding:24px 20px;font-size:13px}
 .pmun-section{padding:6px 8px;border-right:.5px solid var(--bd-3);border-bottom:.5px solid var(--bd-3);min-height:120px}
 .pmun-section:nth-child(2n){border-right:none}
 .pmun-section:nth-last-child(-n+2){border-bottom:none}
+/* Franja de empleo: ocupa el ancho completo debajo de la grilla 2×2 */
+.pmun-section.pmun-emp{grid-column:1/-1;border-right:none;border-bottom:none;min-height:auto}
+.pmun-grid .pmun-section:nth-child(3){border-bottom:none}
 .pmun-section-title{font-size:8.5px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;border-bottom:.5px dotted var(--bd-3);padding-bottom:3px}
 .pmun-row{display:flex;justify-content:space-between;align-items:center;padding:1px 0;font-size:10px;line-height:1.25}
 .pmun-row .lbl{color:var(--tx-sec)}
@@ -238,7 +241,6 @@ canvas{max-width:100%;height:auto}
   <button class="tab" id="tb-fis" onclick="show('fis')">Indicadores fiscales</button>
   <button class="tab" id="tb-p135" onclick="show('p135')">PBG 135 municipios</button>
   <button class="tab" id="tb-pmun" onclick="show('pmun')">Panel por municipio</button>
-  <button class="tab" id="tb-mapa" onclick="show('mapa')">Mapa</button>
   <button class="tab" id="tb-con" onclick="show('con')">Consideraciones generales</button>
 </div>
 
@@ -646,6 +648,19 @@ canvas{max-width:100%;height:auto}
       <div style="font-size:10px;color:var(--tx-sec);margin-top:6px;font-style:italic">Cifras en pesos a <strong>valores nominales</strong> (a precios corrientes), expresadas en M (millones). Ej: $74.643 M = 74.643 millones de pesos.</div>
     </div>
   </div>
+  <div class="card">
+    <div class="ct">Creación de empleo registrado privado 2023–2025 <span class="cs">Puestos de trabajo, junio 2023 vs. junio 2025 · Clic en columnas con cifras para ordenar</span></div>
+    <div style="overflow-x:auto">
+      <table class="tbl"><thead><tr>
+        <th>#</th><th style="cursor:pointer;user-select:none" onclick="setSort('tbody-emp','nombre',renderEmpleoTable)" id="th-emp-muni">Municipio</th>
+        <th class="r" style="cursor:pointer;user-select:none" onclick="setSort('tbody-emp','e23',renderEmpleoTable)" id="th-emp-e23">Empleo jun-2023</th>
+        <th class="r" style="cursor:pointer;user-select:none" onclick="setSort('tbody-emp','e25',renderEmpleoTable)" id="th-emp-e25">Empleo jun-2025</th>
+        <th class="r" style="cursor:pointer;user-select:none" onclick="setSort('tbody-emp','delta',renderEmpleoTable)" id="th-emp-delta">Puestos creados</th>
+        <th class="r" style="cursor:pointer;user-select:none" onclick="setSort('tbody-emp','vpct',renderEmpleoTable)" id="th-emp-vpct">Variación %</th>
+      </tr></thead><tbody id="tbody-emp"></tbody></table>
+      <div style="font-size:10px;color:var(--tx-sec);margin-top:6px;font-style:italic">Empleo asalariado <strong>registrado del sector privado</strong>, medido en puestos de trabajo. Excluye empleo público, casas particulares, monotributistas, autónomos e informalidad. Se compara junio contra junio para neutralizar la estacionalidad. Fuente: Ministerio de Capital Humano — empleo registrado privado por departamento (SIPA), serie mensual.</div>
+    </div>
+  </div>
 </div>
 
 <!-- PBG 135 MUNICIPIOS -->
@@ -772,17 +787,6 @@ canvas{max-width:100%;height:auto}
 
   <div id="pmun-fichas-wrap">
     <div id="pmun-fichas" style="display:flex;gap:10px;align-items:stretch;flex-wrap:wrap"></div>
-  </div>
-</div>
-
-<!-- MAPA INTERACTIVO (iframe lazy-load: el src se asigna al abrir la pestaña) -->
-<div id="tab-mapa" class="hidden">
-  <div class="card" style="padding:0;overflow:hidden">
-    <div class="ct" style="padding:14px 18px 0">Mapa interactivo <span class="cs">Presión fiscal por municipio · clic en un partido para ver su ficha</span></div>
-    <iframe id="mapa-frame" title="Mapa interactivo de presión fiscal"
-      data-src="mapa/index.html?embed=1"
-      style="width:100%;height:78vh;min-height:560px;border:0;display:block;margin-top:12px"
-      loading="lazy" referrerpolicy="no-referrer"></iframe>
   </div>
 </div>
 
@@ -2274,6 +2278,112 @@ function renderFisTable(){
   document.getElementById('tbody-fis').innerHTML = rows;
 }
 
+// ── CREACIÓN DE EMPLEO REGISTRADO PRIVADO (jun-2023 vs jun-2025) ────────────
+// Fuente: Ministerio de Capital Humano (SIPA), empleo registrado privado por
+// departamento. Valores = [puestos jun-2023, puestos jun-2025].
+const EMPLEO = {
+  "Almirante Brown":[41196,40515],
+  "Avellaneda":[58446,56077],
+  "Azul":[8352,8177],
+  "Bahía Blanca":[60008,60271],
+  "Berazategui":[27365,27254],
+  "Berisso":[6809,6233],
+  "Campana":[23852,22684],
+  "Cañuelas":[9684,9630],
+  "Chivilcoy":[7953,8039],
+  "Coronel Rosales":[3180,3463],
+  "Ensenada":[13204,10687],
+  "Escobar":[36368,35129],
+  "Esteban Echeverría":[32611,32740],
+  "Ezeiza":[31376,32575],
+  "Florencio Varela":[17785,17281],
+  "General Pueyrredón":[118651,120859],
+  "General Rodríguez":[15399,15997],
+  "General San Martín":[76722,73776],
+  "Hurlingham":[17851,17232],
+  "Ituzaingó":[20343,19402],
+  "José C. Paz":[10573,10070],
+  "Junín":[15444,15413],
+  "La Costa":[6855,6775],
+  "La Matanza":[124986,123287],
+  "La Plata":[93803,90428],
+  "Lanús":[53301,51486],
+  "Lomas de Zamora":[59132,57409],
+  "Luján":[16697,16906],
+  "Malvinas Argentinas":[42116,42743],
+  "Marcos Paz":[3259,3624],
+  "Mercedes":[7778,7202],
+  "Merlo":[22228,20649],
+  "Moreno":[33885,34542],
+  "Morón":[52035,50535],
+  "Necochea":[12598,12830],
+  "Olavarría":[16828,15954],
+  "Pergamino":[15576,15615],
+  "Pilar":[64812,63671],
+  "Presidente Perón":[2067,1983],
+  "Quilmes":[68031,65903],
+  "San Fernando":[25880,24642],
+  "San Isidro":[98660,94358],
+  "San Miguel":[27441,27436],
+  "San Nicolás":[19425,19491],
+  "San Pedro":[7739,7365],
+  "San Vicente":[4376,4606],
+  "Tandil":[21084,21810],
+  "Tigre":[82470,81373],
+  "Tres Arroyos":[7899,7761],
+  "Tres de Febrero":[56709,57899],
+  "Vicente López":[116454,117366],
+  "Zárate":[29481,26783]
+};
+function empVal(m, col){
+  const e = EMPLEO[m.nombre];
+  if(!e) return null;
+  if(col === 'nombre') return m.nombre;
+  if(col === 'e23') return e[0];
+  if(col === 'e25') return e[1];
+  if(col === 'delta') return e[1] - e[0];
+  if(col === 'vpct') return (e[1] - e[0]) / e[0];
+  return null;
+}
+function renderEmpleoTable(){
+  let list = DATA.filter(m => EMPLEO[m.nombre]);
+  // Por defecto: más puestos creados primero. Con sort activo, manda el sort.
+  if(sortState['tbody-emp']){
+    list = applySort(list, 'tbody-emp', empVal);
+  } else {
+    list.sort((a,b) => empVal(b,'delta') - empVal(a,'delta'));
+  }
+  const heads = [
+    {id:'th-emp-muni',  col:'nombre', label:'Municipio'},
+    {id:'th-emp-e23',   col:'e23',    label:'Empleo jun-2023'},
+    {id:'th-emp-e25',   col:'e25',    label:'Empleo jun-2025'},
+    {id:'th-emp-delta', col:'delta',  label:'Puestos creados'},
+    {id:'th-emp-vpct',  col:'vpct',   label:'Variación %'},
+  ];
+  heads.forEach(h => { const th = document.getElementById(h.id); if(th) th.innerHTML = h.label + sortInd('tbody-emp', h.col); });
+
+  function cellNum(v){ return `<td class="r">${v.toLocaleString('es-AR')}</td>`; }
+  function cellDelta(v){
+    const cls = v >= 0 ? 'ok' : 'bad';
+    const sign = v < 0 ? '−' : '+';
+    return `<td class="${cls}">${sign}${Math.abs(v).toLocaleString('es-AR')}</td>`;
+  }
+  function cellVar(v){
+    const cls = v >= 0 ? 'ok' : 'bad';
+    const sign = v < 0 ? '−' : '+';
+    return `<td class="${cls}">${sign}${trunc1(Math.abs(v)*100)}%</td>`;
+  }
+
+  document.getElementById('tbody-emp').innerHTML = list.map((m,i) => `<tr${tdfRowCls(m)}>
+    <td>${i+1}</td>
+    <td>${m.nombre}${tdfChip(m)}</td>
+    ${cellNum(empVal(m,'e23'))}
+    ${cellNum(empVal(m,'e25'))}
+    ${cellDelta(empVal(m,'delta'))}
+    ${cellVar(empVal(m,'vpct'))}
+  </tr>`).join('');
+}
+
 // ── PBG Y COPARTICIPACIÓN ───────────────────────────────────────────────────
 // Helpers que adaptan mis estructuras de datos al formato del scatter original.
 // Infra en escala 0-100; PBG/CUD en % (pct_pbg y cud_2026 vienen en 0-1 → *100).
@@ -3199,6 +3309,8 @@ function renderPmunFicha(m, maxs){
   const cae = pmunGetCAE(m);
   const fis = pmunGetFiscal(m);
   const ali = pmunGetAlic(m);
+  const e = EMPLEO[m.nombre];
+  const emp = e ? {delta: e[1] - e[0]} : null;
   const secLbl = m.seccion ? `S${m.seccion}°` : '';
 
   function fmtPct(v){ return v == null ? '<span style="color:var(--tx-sec);font-style:italic">s/d</span>' : trunc1(v)+'%'; }
@@ -3307,12 +3419,23 @@ function renderPmunFicha(m, maxs){
           <div class="pmun-row"><span class="lbl">C. Mayorista</span><span class="val">${ali.mayorista != null ? trunc2(ali.mayorista)+'%' : '<span style="color:var(--tx-sec);font-style:italic">s/d</span>'}</span></div>
         ` : '<div style="color:var(--tx-sec);font-style:italic;font-size:10px;text-align:center;padding:8px 0">Sin datos</div>'}
       </div>
+
+      <!-- Empleo registrado privado (fuente distinta: SIPA) -->
+      <div class="pmun-section pmun-emp">
+        <div class="pmun-section-title">💼 Empleo privado 2023–2025</div>
+        ${emp ? `
+          <div class="pmun-row">
+            <span class="lbl">¿Creó empleo?</span>
+            <span class="val" style="color:${emp.delta >= 0 ? 'var(--ok)' : 'var(--bad)'};font-weight:700">${emp.delta >= 0 ? 'Sí' : 'No'} · ${emp.delta >= 0 ? '+' : '−'}${Math.abs(emp.delta).toLocaleString('es-AR')} puestos</span>
+          </div>
+        ` : '<div class="pmun-row"><span class="lbl">¿Creó empleo?</span><span class="val" style="color:var(--tx-sec);font-style:italic;font-weight:500">s/d</span></div>'}
+      </div>
     </div>
   </div>`;
 }
 
 function show(t){
-  ['res','inf','ali','pres','pbg','fis','p135','pmun','mapa','con'].forEach(x => {
+  ['res','inf','ali','pres','pbg','fis','p135','pmun','con'].forEach(x => {
     document.getElementById('tab-'+x).classList.add('hidden');
     document.getElementById('tb-'+x).classList.remove('active');
   });
@@ -3323,10 +3446,9 @@ function show(t){
   if(t==='ali'){ buildAliKPIs(); buildAliRanks(); buildAliTable(); }
   if(t==='pres'){ setTimeout(() => { buildPresKPIs(); buildPresTable(); drawPresChart(); }, 30); }
   if(t==='pbg'){ setTimeout(buildPBG, 30); }
-  if(t==='fis'){ setTimeout(() => { drawFisChart(); buildFisRanks(); renderFisTable(); }, 30); }
+  if(t==='fis'){ setTimeout(() => { drawFisChart(); buildFisRanks(); renderFisTable(); renderEmpleoTable(); }, 30); }
   if(t==='p135'){ setTimeout(buildP135, 30); }
   if(t==='pmun'){ buildPmun(); }
-  if(t==='mapa'){ var f=document.getElementById('mapa-frame'); if(f && !f.src){ f.src=f.getAttribute('data-src'); } }
   if(t==='con'){ buildCon(); }
 }
 
