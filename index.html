@@ -5106,20 +5106,32 @@ function infPesosSubt(){
 // Solo con un municipio y con el ejercicio en un ano: con «todos» son nueve importes y con dos
 // o tres municipios la comparacion se lee mejor en la tabla.
 function infCuenta(rows, munis){
-  if(munis.length !== 1 || rows.length !== 3) return null;
-  const bus = k => rows.find(r => r.it.k === k);
-  const it = bus('fis_it'), gt = bus('fis_gt'), rf = bus('fis_rf');
-  if(!it || !gt || !rf) return null;
-  const v = rf.vals[0];
-  const sig = (v == null) ? '' : (v >= 0 ? ' pos' : ' neg');
-  const cel = (r, res) => '<div class="ir-ctai'+(res || '')+'">'
-    + '<div class="ir-ctal">'+infEsc(r.it.lbl)+'</div>'
-    + '<div class="ir-ctav">'+(infFmt(r.it, r.vals[0]) || 's/d')+'</div>'
-    + (res ? '<div class="ir-ctan">'+(v == null ? '&nbsp;' : (v >= 0 ? 'Superávit' : 'Déficit'))+'</div>' : '')
-    + '</div>';
-  return '<div class="ir-cta">' + cel(it) + '<div class="ir-ctao">−</div>' + cel(gt)
-    + '<div class="ir-ctao">=</div>' + cel(rf, ' res' + sig) + '</div>'
-    + '<div class="ir-cap">'+infEsc(infPesosSubt())+'</div>';
+  if(munis.length !== 1 || !rows.length) return null;
+  // UNA cuenta —ingreso − gasto = resultado— POR EJERCICIO, una debajo de la otra. Con «los
+  // tres años» antes no entraba (pedia exactamente 3 filas y llegaban 9), asi que caia a la
+  // tabla y los años salian como nueve columnas en un solo renglon.
+  const idxs = [...new Set(rows.map(r => r.idx))];
+  if(rows.length !== idxs.length * 3) return null;
+  const varios = idxs.length > 1;
+  const bloque = ix => {
+    const sub = rows.filter(r => r.idx === ix);
+    const bus = k => sub.find(r => r.it.k === k);
+    const it = bus('fis_it'), gt = bus('fis_gt'), rf = bus('fis_rf');
+    if(!it || !gt || !rf) return null;
+    const v = rf.vals[0];
+    const sig = (v == null) ? '' : (v >= 0 ? ' pos' : ' neg');
+    const cel = (r, res) => '<div class="ir-ctai'+(res || '')+'">'
+      + '<div class="ir-ctal">'+infEsc(r.it.lbl)+'</div>'
+      + '<div class="ir-ctav">'+(infFmt(r.it, r.vals[0]) || 's/d')+'</div>'
+      + (res ? '<div class="ir-ctan">'+(v == null ? '&nbsp;' : (v >= 0 ? 'Superávit' : 'Déficit'))+'</div>' : '')
+      + '</div>';
+    return (varios && ix != null ? '<div class="ir-tilelbl">'+infEsc(YRS[ix])+'</div>' : '')
+      + '<div class="ir-cta">' + cel(it) + '<div class="ir-ctao">−</div>' + cel(gt)
+      + '<div class="ir-ctao">=</div>' + cel(rf, ' res' + sig) + '</div>';
+  };
+  const hs = idxs.map(bloque);
+  if(hs.some(x => x == null)) return null;
+  return hs.join('') + '<div class="ir-cap">'+infEsc(infPesosSubt())+'</div>';
 }
 
 function infPesosTabla(rows, munis){
