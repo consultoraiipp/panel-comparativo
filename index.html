@@ -3127,15 +3127,25 @@ function drawFisChart(){
           varCol = d>=0 ? '#1F7A3F' : '#C53030';
         }
       }
-      const celdas = s.data.map(v => `<td class="r" style="font-variant-numeric:tabular-nums;font-weight:600">${fmtV(v)}</td>`).join('');
-      return `<tr><td style="white-space:nowrap;font-weight:${isTdf?'700':'500'}"><span class="lg-dot" style="background:${color}"></span>${nombre}</td>${celdas}<td class="r" style="font-variant-numeric:tabular-nums;font-weight:700;color:${varCol}">${varTxt}</td></tr>`;
+      // Un año por FILA (no una columna por año): con tres años y varias series la tabla
+      // ancha obligaba a barrer de izquierda a derecha. La variación es de la serie entera,
+      // así que va una sola vez, en la fila del último año.
+      return s.data.map((v, i) => {
+        const primera = i === 0, ultima = i === s.data.length - 1;
+        return `<tr${primera ? ' style="border-top:1px solid var(--bd-3)"' : ''}>`
+          + `<td style="white-space:nowrap;font-weight:${isTdf?'700':'500'}"><span class="lg-dot" style="background:${color}"></span>${nombre}</td>`
+          + `<td class="r" style="font-variant-numeric:tabular-nums;color:var(--tx-sec)">${YRS[i]}</td>`
+          + `<td class="r" style="font-variant-numeric:tabular-nums;font-weight:600">${fmtV(v)}</td>`
+          + `<td class="r" style="font-variant-numeric:tabular-nums;font-weight:700;color:${ultima?varCol:'transparent'}">${ultima ? varTxt : ''}</td>`
+          + `</tr>`;
+      }).join('');
     }).join('');
     const unidad = isPct || isGK ? '% sobre el total del año' : 'millones de pesos nominales';
     valsBox.innerHTML =
       '<details open style="border:.5px solid var(--bd-3);border-radius:var(--rad-md);padding:6px 8px;background:var(--bg-sec)">'
       + '<summary style="cursor:pointer;font-size:11px;font-weight:600;color:var(--tx-sec)">Valores por año <span style="font-weight:400;font-style:italic">('+unidad+')</span></summary>'
-      + '<div style="overflow-x:auto;margin-top:6px"><table class="tbl" style="font-size:11px"><thead><tr><th>Serie</th>'
-      + YRS.map(y=>'<th class="r">'+y+'</th>').join('')
+      + '<div style="overflow-x:auto;margin-top:6px"><table class="tbl" style="font-size:11px"><thead><tr>'
+      + '<th>Serie</th><th class="r">Año</th><th class="r">Valor</th>'
       + '<th class="r">Var. '+YRS[0]+'–'+YRS[YRS.length-1]+'</th></tr></thead><tbody>'
       + rows + '</tbody></table></div></details>';
   }
@@ -4673,12 +4683,12 @@ const INF_GROUPS = [
 ];
 const INF_ITEM = {};
 INF_GROUPS.forEach(g => g.items.forEach(it => INF_ITEM[it.k] = {it:it, g:g}));
-// Arranca en 'ambos' —barras y tabla— porque asi se ve el informe del comparador TISH.
-// Con 'tabla' las barras no aparecian hasta tocar el conmutador de cada bloque.
-INF_GROUPS.forEach(g => INF_VISTA[g.tab] = 'ambos');
+// Arranca en 'grafico' —solo barras— por pedido del usuario: el informe se lee de un golpe
+// y la tabla queda para quien la pida con el conmutador de cada bloque.
+INF_GROUPS.forEach(g => INF_VISTA[g.tab] = 'grafico');
 INF_PICK = INF_GROUPS.flatMap(g => g.items.map(i => i.k));   // todo, siempre
 function infGrupo(tab){ return INF_GROUPS.find(g => g.tab === tab) || null; }
-function infVista(tab){ return INF_VISTA[tab] || 'tabla'; }
+function infVista(tab){ return INF_VISTA[tab] || 'grafico'; }
 function infVistaUnica(){   // la vista común a los cuatro, o null si están mezcladas
   const v = INF_GROUPS.map(g => infVista(g.tab));
   return v.every(x => x === v[0]) ? v[0] : null;
@@ -5482,7 +5492,7 @@ function infRender(){
     + '</div>';
 
   // ── 3 · cómo se muestra. Lo que ENTRA no se elige: van las seis planillas completas ──
-  const vu = infVistaUnica() || 'ambos';
+  const vu = infVistaUnica() || 'grafico';
   const segV = [['ambos','Barras y tabla'],['grafico','Sólo barras'],['tabla','Sólo tabla']].map(([v,l]) =>
     '<button class="infsegb'+(vu===v?' on':'')+'" onclick="infSetVistaTodos(\'' + v + '\')">'+l+'</button>').join('');
   const totInd = INF_GROUPS.reduce((a,g)=>a+g.items.length,0);
