@@ -4124,6 +4124,9 @@ function seccionColor(sec){ return SECCION_COLORS[sec] || 'var(--bd-2)'; }
 
 let pmunFilter = 'all';  // 'all' o 's1'..'s8'
 
+// Municipios que no se ofrecen en esta pestania (no afecta al resto del panel)
+const PMUN_EXCLUIDOS = ['San Miguel'];
+
 let pmunSelected = ['Tres de Febrero'];   // Array de nombres de municipios elegidos (TDF incluido por default pero removible)
 
 function setPmunFilter(f){
@@ -4149,7 +4152,7 @@ function populatePmunSel(){
   const sel = document.getElementById('sel-pmun-add');
   if(!sel) return;
   // Excluir solo los ya seleccionados (TDF puede agregarse libremente)
-  let list = DATA.filter(m => !pmunSelected.includes(m.nombre));
+  let list = DATA.filter(m => !pmunSelected.includes(m.nombre) && !PMUN_EXCLUIDOS.includes(m.nombre));
   if(pmunFilter.startsWith('s')){
     const secNum = parseInt(pmunFilter.slice(1));
     list = list.filter(m => m.seccion === secNum);
